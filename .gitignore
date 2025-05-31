@@ -504,3 +504,6 @@ node_modules/*
 # Enviroment
 *.env
 !.env.sample
+
+# Custom Ignore
+my-note/*
