@@ -1,29 +1,41 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail; // メール認証を使用する場合
+use App\Enums\RoleEnum;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens; // Laravel Sanctumを使用する場合
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable // MustVerifyEmail を実装することも検討
+/**
+ * App\Models\User
+ *
+ * @property string $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property string|null $profile_image_path
+ * @property string|null $cover_image_path
+ * @property string|null $bio
+ * @property string|null $channel_name
+ * @property bool $is_streamer
+ * @property RoleEnum $roles
+ * @property string|null $pending_email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'id',
         'name',
         'email',
         'password',
-        // 追加したカラム
         'profile_image_path',
         'cover_image_path',
         'bio',
@@ -31,27 +43,17 @@ class User extends Authenticatable // MustVerifyEmail を実装することも�
         'is_streamer',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
-        'roles' => \App\Enums\RoleEnum::class,
+        'roles' => RoleEnum::class,
         'email_verified_at' => 'datetime',
         'created_at' => 'datetime',
-        'update_at' => 'datetime',
-        'password' => 'hashed', // Laravel 10以降では自動的に処理されることが多い
-        'is_streamer' => 'boolean', // 追加
+        'updated_at' => 'datetime',
+        'password' => 'hashed',
+        'is_streamer' => 'boolean',
     ];
 
     protected static function boot()
@@ -63,9 +65,8 @@ class User extends Authenticatable // MustVerifyEmail を実装することも�
                 $user->id = (string) \Illuminate\Support\Str::uuid();
             }
 
-            // rolesが未定義なら自動設定（念のため）
             if (empty($user->roles)) {
-                $user->roles = \App\Enums\RoleEnum::USER;
+                $user->roles = RoleEnum::USER;
             }
         });
     }
