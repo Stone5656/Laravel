@@ -19,6 +19,7 @@ class User extends Authenticatable // MustVerifyEmail を実装することも�
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'password',
@@ -37,7 +38,6 @@ class User extends Authenticatable // MustVerifyEmail を実装することも�
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -46,8 +46,27 @@ class User extends Authenticatable // MustVerifyEmail を実装することも�
      * @var array<string, string>
      */
     protected $casts = [
+        'roles' => \App\Enums\RoleEnum::class,
         'email_verified_at' => 'datetime',
+        'created_at' => 'datetime',
+        'update_at' => 'datetime',
         'password' => 'hashed', // Laravel 10以降では自動的に処理されることが多い
         'is_streamer' => 'boolean', // 追加
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->id)) {
+                $user->id = (string) \Illuminate\Support\Str::uuid();
+            }
+
+            // rolesが未定義なら自動設定（念のため）
+            if (empty($user->roles)) {
+                $user->roles = \App\Enums\RoleEnum::USER;
+            }
+        });
+    }
 }
