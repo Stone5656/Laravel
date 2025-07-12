@@ -10,18 +10,6 @@ use App\Http\Requests\User\UpdateProfileRequest;
 use App\Http\Requests\User\UpdateRoleRequest;
 use App\Http\Requests\User\UpdateStreamingRequest;
 
-/**
- * @OA\Info(
- *     version="1.0.0",
- *     title="User Management API",
- *     description="API for managing users, including profile updates, role management, and streaming settings."
- * )
- *
- * @OA\Tag(
- *     name="Users",
- *     description="User related operations"
- * )
- */
 class UserController extends Controller
 {
     public function __construct(
@@ -32,9 +20,10 @@ class UserController extends Controller
      * @OA\Get(
      *     path="/api/users",
      *     tags={"Users"},
-     *     summary="Get list of users",
+     *     summary="ユーザー一覧の取得",
+     *     description="管理者が全ユーザーの一覧を取得します。",
      *     security={{"sanctum":{}}},
-     *     @OA\Response(response=200, description="Successful operation")
+     *     @OA\Response(response=200, description="ユーザー一覧の取得に成功しました")
      * )
      */
     public function index(FilterUserRequest $request)
@@ -51,15 +40,17 @@ class UserController extends Controller
      * @OA\Get(
      *     path="/api/users/{user}/edit",
      *     tags={"Users"},
-     *     summary="Get user profile for editing",
+     *     summary="ユーザー編集用データの取得",
+     *     description="指定したユーザーIDに対応するプロフィール情報を取得します。",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="user",
+     *         description="対象ユーザーID",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response=200, description="Successful operation")
+     *     @OA\Response(response=200, description="ユーザー情報の取得に成功しました")
      * )
      */
     public function edit(User $user)
@@ -73,25 +64,28 @@ class UserController extends Controller
      * @OA\Put(
      *     path="/api/users/{user}/profile",
      *     tags={"Users"},
-     *     summary="Update user profile",
+     *     summary="ユーザープロフィールの更新",
+     *     description="指定したユーザーのプロフィール情報（名前、自己紹介、画像等）を更新します。",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="user",
+     *         description="更新対象のユーザーID",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
+     *         description="更新するプロフィール情報",
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string"),
-     *             @OA\Property(property="bio", type="string"),
-     *             @OA\Property(property="profile_image_path", type="string"),
-     *             @OA\Property(property="cover_image_path", type="string"),
-     *             @OA\Property(property="channel_name", type="string")
+     *             @OA\Property(property="name", type="string", description="ユーザー名"),
+     *             @OA\Property(property="bio", type="string", description="自己紹介文"),
+     *             @OA\Property(property="profile_image_path", type="string", description="プロフィール画像パス"),
+     *             @OA\Property(property="cover_image_path", type="string", description="カバー画像パス"),
+     *             @OA\Property(property="channel_name", type="string", description="チャンネル名")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Profile updated successfully")
+     *     @OA\Response(response=200, description="プロフィールの更新に成功しました")
      * )
      */
     public function updateProfile(UpdateProfileRequest $request, User $user)
@@ -107,21 +101,24 @@ class UserController extends Controller
      * @OA\Put(
      *     path="/api/users/{user}/roles",
      *     tags={"Users"},
-     *     summary="Update user role",
+     *     summary="ユーザーのロール（役割）の変更",
+     *     description="指定したユーザーのロール（admin, userなど）を変更します。",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="user",
+     *         description="変更対象のユーザーID",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
+     *         description="新しいロール情報",
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="roles", type="string", example="admin")
+     *             @OA\Property(property="roles", type="string", example="admin", description="新しいロール")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Role updated successfully")
+     *     @OA\Response(response=200, description="ロールの更新に成功しました")
      * )
      */
     public function updateRole(UpdateRoleRequest $request, User $user)
@@ -137,21 +134,24 @@ class UserController extends Controller
      * @OA\Put(
      *     path="/api/users/{user}/streaming",
      *     tags={"Users"},
-     *     summary="Set user streaming status",
+     *     summary="配信ステータスの変更",
+     *     description="指定したユーザーの配信ステータス（配信者かどうか）を更新します。",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="user",
+     *         description="配信ステータス変更対象のユーザーID",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\RequestBody(
+     *         description="新しい配信ステータス",
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="is_streamer", type="boolean")
+     *             @OA\Property(property="is_streamer", type="boolean", description="配信者フラグ true/false")
      *         )
      *     ),
-     *     @OA\Response(response=200, description="Streaming status updated")
+     *     @OA\Response(response=200, description="配信ステータスの更新に成功しました")
      * )
      */
     public function setStreaming(UpdateStreamingRequest $request, User $user)
@@ -167,15 +167,17 @@ class UserController extends Controller
      * @OA\Delete(
      *     path="/api/users/{user}",
      *     tags={"Users"},
-     *     summary="Delete user",
+     *     summary="ユーザーの削除",
+     *     description="指定したユーザーアカウントを削除します。",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="user",
+     *         description="削除対象のユーザーID",
      *         in="path",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\Response(response=200, description="User deleted successfully")
+     *     @OA\Response(response=200, description="ユーザーの削除に成功しました")
      * )
      */
     public function destroy(User $user)
