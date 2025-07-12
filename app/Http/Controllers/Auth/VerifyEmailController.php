@@ -10,7 +10,14 @@ use Illuminate\Http\RedirectResponse;
 class VerifyEmailController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * @OA\Get(
+     *     path="/api/auth/verify-email/{id}/{hash}",
+     *     tags={"Auth"},
+     *     summary="メールアドレス確認",
+     *     @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Parameter(name="hash", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(response=200, description="確認成功")
+     * )
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {

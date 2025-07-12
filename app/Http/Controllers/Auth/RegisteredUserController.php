@@ -15,7 +15,12 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * @OA\Get(
+     *     path="/api/auth/register",
+     *     tags={"Auth"},
+     *     summary="ユーザー登録画面の表示",
+     *     @OA\Response(response=200, description="成功")
+     * )
      */
     public function create(): View
     {
@@ -23,9 +28,21 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @OA\Post(
+     *     path="/api/auth/register",
+     *     tags={"Auth"},
+     *     summary="新規ユーザー登録",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string"),
+     *             @OA\Property(property="email", type="string", format="email"),
+     *             @OA\Property(property="password", type="string"),
+     *             @OA\Property(property="password_confirmation", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(response=201, description="登録成功")
+     * )
      */
     public function store(Request $request): RedirectResponse
     {
