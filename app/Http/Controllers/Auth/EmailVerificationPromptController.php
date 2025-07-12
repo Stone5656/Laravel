@@ -3,33 +3,33 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
+/**
+ * メール認証プロンプトAPI
+ */
 class EmailVerificationPromptController extends Controller
 {
     /**
      * @OA\Get(
      *     path="/api/verify-email",
      *     tags={"Auth"},
-     *     summary="メール認証プロンプト表示",
-     *     description="メールアドレスが未認証のユーザーに、認証を促すプロンプト画面を表示するAPIです。",
-     *     security={{"sanctum":{}}},
-     *     @OA\Response(
-     *         response=302,
-     *         description="すでに認証済みの場合はダッシュボードへリダイレクト"
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="認証を促すビューを返します"
-     *     )
+     *     summary="メール認証確認",
+     *     description="認証済みか確認し、未認証の場合はプロンプトを返します。",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="未認証"),
+     *     @OA\Response(response=302, description="認証済み（ダッシュボード想定）")
      * )
      */
-    public function __invoke(Request $request): RedirectResponse|View
+    public function __invoke(Request $request): JsonResponse
     {
-        return $request->user()->hasVerifiedEmail()
-                    ? redirect()->intended(route('dashboard', absolute: false))
-                    : view('auth.verify-email');
+        $user = auth('api')->user() ?? abort(401, '認証が必要です。');
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['message' => 'すでにメール認証済みです。'], 302);
+        }
+
+        return response()->json(['message' => 'メール認証が必要です。'], 200);
     }
 }

@@ -107,11 +107,14 @@
                 "responses": {
                     "200": {
                         "description": "確認メール送信完了"
+                    },
+                    "401": {
+                        "description": "未認証"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -122,7 +125,7 @@
                     "Auth"
                 ],
                 "summary": "メールアドレス変更の確定",
-                "description": "送信されたメールリンクからメールアドレス変更を確定します。",
+                "description": "確認メールのリンクからメールアドレス変更を確定します。",
                 "operationId": "5375e99dc9bfefd4c18ee1a9479f9b8a",
                 "parameters": [
                     {
@@ -145,11 +148,14 @@
                 "responses": {
                     "200": {
                         "description": "メールアドレス変更完了"
+                    },
+                    "403": {
+                        "description": "アクセス拒否"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -160,7 +166,7 @@
                     "Auth"
                 ],
                 "summary": "パスワード確認",
-                "description": "機密操作前のパスワード確認を行います。",
+                "description": "機密操作（メール変更・アカウント削除など）の前に、ユーザーのパスワードを再確認します。",
                 "operationId": "7acc552047719feda4ebbe3d9f7d7e9f",
                 "requestBody": {
                     "required": true,
@@ -185,13 +191,16 @@
                     "200": {
                         "description": "パスワード確認成功"
                     },
+                    "401": {
+                        "description": "認証が必要です"
+                    },
                     "422": {
-                        "description": "パスワード不一致"
+                        "description": "パスワードが正しくありません"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -201,20 +210,23 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "メール認証リンクを再送信",
-                "description": "ユーザーがメール認証を完了していない場合に、認証リンクを再送信するAPIです。",
+                "summary": "メール認証リンク再送信",
+                "description": "未認証のユーザーにメール認証リンクを送信します。",
                 "operationId": "21ff3f9f9b9e1407909089f864312e1c",
                 "responses": {
-                    "302": {
-                        "description": "すでに認証済みの場合はダッシュボードへリダイレクト"
-                    },
                     "200": {
-                        "description": "メール認証リンクを再送信しました"
+                        "description": "メール認証リンク送信完了"
+                    },
+                    "302": {
+                        "description": "すでにメール認証済み"
+                    },
+                    "401": {
+                        "description": "認証が必要です"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -224,48 +236,22 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "メール認証プロンプト表示",
-                "description": "メールアドレスが未認証のユーザーに、認証を促すプロンプト画面を表示するAPIです。",
+                "summary": "メール認証確認",
+                "description": "認証済みか確認し、未認証の場合はプロンプトを返します。",
                 "operationId": "9003272f91ab17475a4c6baa5985468d",
                 "responses": {
-                    "302": {
-                        "description": "すでに認証済みの場合はダッシュボードへリダイレクト"
-                    },
                     "200": {
-                        "description": "認証を促すビューを返します"
+                        "description": "未認証"
+                    },
+                    "302": {
+                        "description": "認証済み（ダッシュボード想定）"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/api/reset-password/{token}": {
-            "get": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "パスワードリセット画面の表示",
-                "description": "パスワードリセットリンクからアクセスしたユーザーに、新しいパスワードを入力する画面を表示します。",
-                "operationId": "c2a62fc3f25f076e0fe6c5f9baafe86a",
-                "parameters": [
-                    {
-                        "name": "token",
-                        "in": "path",
-                        "description": "パスワードリセット用トークン",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "リセット画面を表示"
-                    }
-                }
             }
         },
         "/api/reset-password": {
@@ -273,8 +259,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "パスワードをリセットする",
-                "description": "リセット用トークンと新しいパスワードを受け取り、ユーザーのパスワードを変更します。",
+                "summary": "パスワードリセット",
+                "description": "リセット用トークンと新しいパスワードを受け取り、パスワードを変更します。",
                 "operationId": "28566bf52aa8f35c19b304b2c2be3829",
                 "requestBody": {
                     "required": true,
@@ -310,11 +296,11 @@
                     }
                 },
                 "responses": {
-                    "302": {
-                        "description": "リセット成功時にログイン画面にリダイレクト"
+                    "200": {
+                        "description": "パスワードリセット成功"
                     },
                     "422": {
-                        "description": "リセット失敗時のバリデーションエラー"
+                        "description": "入力エラー"
                     }
                 }
             }
@@ -324,8 +310,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "現在のパスワードを確認して新しいパスワードに変更",
-                "description": "ログイン中のユーザーが現在のパスワードを確認し、新しいパスワードに変更します。",
+                "summary": "パスワード変更",
+                "description": "現在のパスワード確認後、新しいパスワードに変更します。",
                 "operationId": "4df2d050505e19d60d921ef4c9153379",
                 "requestBody": {
                     "required": true,
@@ -358,32 +344,20 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "パスワード変更完了"
+                        "description": "パスワード変更成功"
                     },
                     "422": {
-                        "description": "バリデーションエラー"
+                        "description": "入力エラー"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
         },
         "/api/auth/forgot-password": {
-            "get": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "パスワードリセット画面の表示",
-                "operationId": "93558fe0f2a85ef3ec58ef0e3a14e09d",
-                "responses": {
-                    "200": {
-                        "description": "成功"
-                    }
-                }
-            },
             "post": {
                 "tags": [
                     "Auth"
@@ -414,42 +388,40 @@
             }
         },
         "/api/auth/register": {
-            "get": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "ユーザー登録画面の表示",
-                "operationId": "fd68de529c7b7fba071ceea810bce10b",
-                "responses": {
-                    "200": {
-                        "description": "成功"
-                    }
-                }
-            },
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "新規ユーザー登録",
+                "description": "ユーザーアカウントを作成します。",
                 "operationId": "735073bfc89fc9fb460bac5e1e48c690",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
                                 "properties": {
                                     "name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "山田 太郎"
                                     },
                                     "email": {
                                         "type": "string",
-                                        "format": "email"
+                                        "example": "user@example.com"
                                     },
                                     "password": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "password123"
                                     },
                                     "password_confirmation": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -460,6 +432,9 @@
                 "responses": {
                     "201": {
                         "description": "登録成功"
+                    },
+                    "422": {
+                        "description": "入力エラー"
                     }
                 }
             }
@@ -470,7 +445,8 @@
                     "Auth"
                 ],
                 "summary": "メールアドレス確認",
-                "operationId": "de3812b62315f16540c9da373e7c2cc3",
+                "description": "メール確認リンクからアクセスしたユーザーのメールアドレスを認証済みにします。",
+                "operationId": "cbfdfe60a752d92ca2f19069998a0b6f",
                 "parameters": [
                     {
                         "name": "id",
@@ -492,6 +468,9 @@
                 "responses": {
                     "200": {
                         "description": "確認成功"
+                    },
+                    "422": {
+                        "description": "リンクが無効または不正です"
                     }
                 }
             }
@@ -742,12 +721,12 @@
     },
     "tags": [
         {
-            "name": "Users",
-            "description": "カスタムしたユーザー関連操作"
-        },
-        {
             "name": "Auth",
             "description": "Laravel Breezeからとってきた認証・認可関連操作"
+        },
+        {
+            "name": "Users",
+            "description": "カスタムしたユーザー関連操作"
         }
     ]
 }

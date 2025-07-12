@@ -18,19 +18,6 @@ use Illuminate\View\View;
 class PasswordResetLinkController extends Controller
 {
     /**
-     * @OA\Get(
-     *     path="/api/auth/forgot-password",
-     *     tags={"Auth"},
-     *     summary="パスワードリセット画面の表示",
-     *     @OA\Response(response=200, description="成功")
-     * )
-     */
-    public function create(): View
-    {
-        return view('auth.forgot-password');
-    }
-
-    /**
      * @OA\Post(
      *     path="/api/auth/forgot-password",
      *     tags={"Auth"},
