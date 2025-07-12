@@ -12,6 +12,490 @@
         }
     ],
     "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ログイン処理 (JWT)",
+                "description": "ユーザーの認証を行い、JWTトークンを返却します。",
+                "operationId": "bc76a9d52929cab7a147ca7b5c527430",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ログイン成功"
+                    },
+                    "401": {
+                        "description": "認証失敗（メールアドレスまたはパスワードが間違っています）"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ログアウト処理 (JWT)",
+                "description": "現在のJWTトークンを無効化します。",
+                "operationId": "0ab4e3cf7bc4f7ec81b48f7928c7de7c",
+                "responses": {
+                    "200": {
+                        "description": "ログアウト成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/email/request": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス変更リクエスト",
+                "description": "新しいメールアドレスへの確認メールを送信します。",
+                "operationId": "8c054a8b16841c68567bec12b86ab308",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "new@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "確認メール送信完了"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/email/confirm/{id}/{email}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス変更の確定",
+                "description": "送信されたメールリンクからメールアドレス変更を確定します。",
+                "operationId": "5375e99dc9bfefd4c18ee1a9479f9b8a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "メールアドレス変更完了"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/password/confirm": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワード確認",
+                "description": "機密操作前のパスワード確認を行います。",
+                "operationId": "7acc552047719feda4ebbe3d9f7d7e9f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "パスワード確認成功"
+                    },
+                    "422": {
+                        "description": "パスワード不一致"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/email/verification-notification": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メール認証リンクを再送信",
+                "description": "ユーザーがメール認証を完了していない場合に、認証リンクを再送信するAPIです。",
+                "operationId": "21ff3f9f9b9e1407909089f864312e1c",
+                "responses": {
+                    "302": {
+                        "description": "すでに認証済みの場合はダッシュボードへリダイレクト"
+                    },
+                    "200": {
+                        "description": "メール認証リンクを再送信しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/verify-email": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メール認証プロンプト表示",
+                "description": "メールアドレスが未認証のユーザーに、認証を促すプロンプト画面を表示するAPIです。",
+                "operationId": "9003272f91ab17475a4c6baa5985468d",
+                "responses": {
+                    "302": {
+                        "description": "すでに認証済みの場合はダッシュボードへリダイレクト"
+                    },
+                    "200": {
+                        "description": "認証を促すビューを返します"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reset-password/{token}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードリセット画面の表示",
+                "description": "パスワードリセットリンクからアクセスしたユーザーに、新しいパスワードを入力する画面を表示します。",
+                "operationId": "c2a62fc3f25f076e0fe6c5f9baafe86a",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "パスワードリセット用トークン",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "リセット画面を表示"
+                    }
+                }
+            }
+        },
+        "/api/reset-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードをリセットする",
+                "description": "リセット用トークンと新しいパスワードを受け取り、ユーザーのパスワードを変更します。",
+                "operationId": "28566bf52aa8f35c19b304b2c2be3829",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "302": {
+                        "description": "リセット成功時にログイン画面にリダイレクト"
+                    },
+                    "422": {
+                        "description": "リセット失敗時のバリデーションエラー"
+                    }
+                }
+            }
+        },
+        "/api/password": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "現在のパスワードを確認して新しいパスワードに変更",
+                "description": "ログイン中のユーザーが現在のパスワードを確認し、新しいパスワードに変更します。",
+                "operationId": "4df2d050505e19d60d921ef4c9153379",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "パスワード変更完了"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/forgot-password": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードリセット画面の表示",
+                "operationId": "93558fe0f2a85ef3ec58ef0e3a14e09d",
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードリセットリンクの送信",
+                "operationId": "43280fd0144031defca486bd5f47334d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "リンク送信成功"
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ユーザー登録画面の表示",
+                "operationId": "fd68de529c7b7fba071ceea810bce10b",
+                "responses": {
+                    "200": {
+                        "description": "成功"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "新規ユーザー登録",
+                "operationId": "735073bfc89fc9fb460bac5e1e48c690",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "登録成功"
+                    }
+                }
+            }
+        },
+        "/api/auth/verify-email/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス確認",
+                "operationId": "de3812b62315f16540c9da373e7c2cc3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "確認成功"
+                    }
+                }
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -260,6 +744,10 @@
         {
             "name": "Users",
             "description": "カスタムしたユーザー関連操作"
+        },
+        {
+            "name": "Auth",
+            "description": "Laravel Breezeからとってきた認証・認可関連操作"
         }
     ]
 }
