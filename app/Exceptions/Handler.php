@@ -9,41 +9,35 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
+/**
+ * アプリケーションの全ての例外をハンドリングするクラス
+ */
 class Handler extends ExceptionHandler
 {
     /**
      * 例外をHTTPレスポンスに変換します。
      *
+     * - APIリクエスト（expectsJson=true）の場合はJSON形式で返します。
+     * - Webリクエストの場合は親クラスの標準処理を行います。
+     *
      * @param  \Illuminate\Http\Request  $request  リクエストインスタンス
-     * @param  \Throwable  $e  投げられた例外
+     * @param  \Throwable  $e  捕捉された例外
      * @return \Symfony\Component\HttpFoundation\Response  レスポンス
      */
     public function render($request, Throwable $e)
     {
-        // 認証エラー（未認証）
-        if ($e instanceof AuthenticationException) {
-            return response()->json(['message' => '認証が必要です。'], 401);
-        }
-
-        // 認可エラー（権限不足）
-        if ($e instanceof AuthorizationException) {
-            return response()->json(['message' => 'この操作は許可されていません。'], 403);
-        }
-
-        // APIリクエスト時の共通エラーレスポンス
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => $e->getMessage(),
+                'message' => $this->getMessageForException($e),
                 'type' => class_basename($e),
             ], $this->getStatusCode($e));
         }
 
-        // 通常（Web）の例外ハンドリング
         return parent::render($request, $e);
     }
 
     /**
-     * 例外の種類に応じたHTTPステータスコードを取得します。
+     * 例外の種類に応じたHTTPステータスコードを返します。
      *
      * @param  \Throwable  $e  例外インスタンス
      * @return int  HTTPステータスコード
@@ -55,7 +49,27 @@ class Handler extends ExceptionHandler
             $e instanceof AuthorizationException => 403,       // 権限エラー
             $e instanceof ValidationException => 422,          // バリデーションエラー
             $e instanceof NotFoundHttpException => 404,        // リソース未発見
+            $e instanceof \Symfony\Component\HttpKernel\Exception\HttpException && $e->getStatusCode() === 302 => 302, // リダイレクト
             default => 500,                                     // その他（サーバーエラー）
         };
+    }
+
+    /**
+     * 例外の種類に応じた日本語メッセージを返します。
+     *
+     * @param  \Throwable  $e  例外インスタンス
+     * @return string  日本語のエラーメッセージ
+     */
+    protected function getMessageForException(Throwable $e): string
+    {
+        $baseMessage = match (true) {
+            $e instanceof AuthenticationException => '認証が必要です。',
+            $e instanceof AuthorizationException => 'この操作は許可されていません。',
+            $e instanceof ValidationException => '入力内容に不備があります。',
+            $e instanceof NotFoundHttpException => 'リソースが見つかりません。',
+            default => 'システムエラーが発生しました。',
+        };
+
+        return $baseMessage . "\n" . ($e->getMessage() ?: '');
     }
 }
