@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * App\Models\User
@@ -27,14 +30,15 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $language
+ * @property string|null $time_zone
+ * @property string|null $phone_number
+ * @property \Illuminate\Support\Carbon|null $birth_day
  */
+
 class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
-
-    public function getJWTIdentifier() { return $this->getKey(); }
-
-    public function getJWTCustomClaims() { return []; }
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
         'id',
@@ -46,6 +50,10 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'bio',
         'channel_name',
         'is_streamer',
+        'language',
+        'time_zone',
+        'phone_number',
+        'birth_day',
     ];
 
     protected $hidden = [
@@ -57,6 +65,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'email_verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'birth_day' => 'date',
         'password' => 'hashed',
         'is_streamer' => 'boolean',
     ];
@@ -67,7 +76,11 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 
         static::creating(function ($user) {
             if (empty($user->id)) {
-                $user->id = (string) \Illuminate\Support\Str::uuid();
+                $uuid = (string) Str::uuid();
+                if (!Str::isUuid($uuid)) {
+                    throw ValidationException::withMessages(['id' => 'Invalid UUID']);
+                }
+                $user->id = $uuid;
             }
 
             if (empty($user->roles)) {
@@ -75,4 +88,6 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
             }
         });
     }
+
+    // JWT methods...
 }
