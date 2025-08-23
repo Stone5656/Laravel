@@ -1,0 +1,732 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Streaming Site API",
+        "description": "動画配信サイト向けのAPIです。ユーザー管理、認証、配信ステータスなどを提供します。",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost",
+            "description": "Laravel 12 Sail　ローカル開発環境"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ログイン処理 (JWT)",
+                "description": "ユーザーの認証を行い、JWTトークンを返却します。",
+                "operationId": "bc76a9d52929cab7a147ca7b5c527430",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ログイン成功"
+                    },
+                    "401": {
+                        "description": "認証失敗（メールアドレスまたはパスワードが間違っています）"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ログアウト処理 (JWT)",
+                "description": "現在のJWTトークンを無効化します。",
+                "operationId": "0ab4e3cf7bc4f7ec81b48f7928c7de7c",
+                "responses": {
+                    "200": {
+                        "description": "ログアウト成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/email/request": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス変更リクエスト",
+                "description": "新しいメールアドレスへの確認メールを送信します。",
+                "operationId": "8c054a8b16841c68567bec12b86ab308",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "new@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "確認メール送信完了"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/email/confirm/{id}/{email}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス変更の確定",
+                "description": "確認メールのリンクからメールアドレス変更を確定します。",
+                "operationId": "5375e99dc9bfefd4c18ee1a9479f9b8a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "email",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "メールアドレス変更完了"
+                    },
+                    "403": {
+                        "description": "アクセス拒否"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/password/confirm": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワード確認",
+                "description": "機密操作（メール変更・アカウント削除など）の前に、ユーザーのパスワードを再確認します。",
+                "operationId": "7acc552047719feda4ebbe3d9f7d7e9f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "パスワード確認成功"
+                    },
+                    "401": {
+                        "description": "認証が必要です"
+                    },
+                    "422": {
+                        "description": "パスワードが正しくありません"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/email/verification-notification": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メール認証リンク再送信",
+                "description": "未認証のユーザーにメール認証リンクを送信します。",
+                "operationId": "21ff3f9f9b9e1407909089f864312e1c",
+                "responses": {
+                    "200": {
+                        "description": "メール認証リンク送信完了"
+                    },
+                    "302": {
+                        "description": "すでにメール認証済み"
+                    },
+                    "401": {
+                        "description": "認証が必要です"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/verify-email": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メール認証確認",
+                "description": "認証済みか確認し、未認証の場合はプロンプトを返します。",
+                "operationId": "9003272f91ab17475a4c6baa5985468d",
+                "responses": {
+                    "200": {
+                        "description": "未認証"
+                    },
+                    "302": {
+                        "description": "認証済み（ダッシュボード想定）"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/reset-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードリセット",
+                "description": "リセット用トークンと新しいパスワードを受け取り、パスワードを変更します。",
+                "operationId": "28566bf52aa8f35c19b304b2c2be3829",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "token",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "token": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "パスワードリセット成功"
+                    },
+                    "422": {
+                        "description": "入力エラー"
+                    }
+                }
+            }
+        },
+        "/api/password": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワード変更",
+                "description": "現在のパスワード確認後、新しいパスワードに変更します。",
+                "operationId": "4df2d050505e19d60d921ef4c9153379",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "パスワード変更成功"
+                    },
+                    "422": {
+                        "description": "入力エラー"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "パスワードリセットリンクの送信",
+                "operationId": "43280fd0144031defca486bd5f47334d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "リンク送信成功"
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "新規ユーザー登録",
+                "description": "ユーザーアカウントを作成します。",
+                "operationId": "735073bfc89fc9fb460bac5e1e48c690",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "山田 太郎"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "登録成功"
+                    },
+                    "422": {
+                        "description": "入力エラー"
+                    }
+                }
+            }
+        },
+        "/api/auth/verify-email/{id}/{hash}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "メールアドレス確認",
+                "description": "メール確認リンクからアクセスしたユーザーのメールアドレスを認証済みにします。",
+                "operationId": "cbfdfe60a752d92ca2f19069998a0b6f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "hash",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "確認成功"
+                    },
+                    "422": {
+                        "description": "リンクが無効または不正です"
+                    }
+                }
+            }
+        },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー一覧の取得",
+                "description": "管理者が全ユーザーの一覧を取得します。",
+                "operationId": "c457726701591d1183b53aa71fc13441",
+                "responses": {
+                    "200": {
+                        "description": "ユーザー一覧の取得に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}/edit": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザー編集用データの取得",
+                "description": "指定したユーザーIDに対応するプロフィール情報を取得します。",
+                "operationId": "fd5656a1832eb634bcd230c62016d66a",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "対象ユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ユーザー情報の取得に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}/profile": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザープロフィールの更新",
+                "description": "指定したユーザーのプロフィール情報（名前、自己紹介、画像等）を更新します。",
+                "operationId": "d095e130b62b04e5a18591e47395f4d1",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "更新対象のユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "更新するプロフィール情報",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "ユーザー名",
+                                        "type": "string"
+                                    },
+                                    "bio": {
+                                        "description": "自己紹介文",
+                                        "type": "string"
+                                    },
+                                    "profile_image_path": {
+                                        "description": "プロフィール画像パス",
+                                        "type": "string"
+                                    },
+                                    "cover_image_path": {
+                                        "description": "カバー画像パス",
+                                        "type": "string"
+                                    },
+                                    "channel_name": {
+                                        "description": "チャンネル名",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "プロフィールの更新に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}/roles": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザーのロール（役割）の変更",
+                "description": "指定したユーザーのロール（admin, userなど）を変更します。",
+                "operationId": "65dad7e8f68131e207b99d51955ef548",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "変更対象のユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "新しいロール情報",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "roles": {
+                                        "description": "新しいロール",
+                                        "type": "string",
+                                        "example": "admin"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ロールの更新に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}/streaming": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "配信ステータスの変更",
+                "description": "指定したユーザーの配信ステータス（配信者かどうか）を更新します。",
+                "operationId": "b71323aa1c3dc3028c4f6b5f0f4e797e",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "配信ステータス変更対象のユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "新しい配信ステータス",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_streamer": {
+                                        "description": "配信者フラグ true/false",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "配信ステータスの更新に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/users/{user}": {
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "ユーザーの削除",
+                "description": "指定したユーザーアカウントを削除します。",
+                "operationId": "e0f9a385a1d6788b99e519bd98cf7239",
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "description": "削除対象のユーザーID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ユーザーの削除に成功しました"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Laravel Breezeからとってきた認証・認可関連操作"
+        },
+        {
+            "name": "Users",
+            "description": "カスタムしたユーザー関連操作"
+        }
+    ]
+}
