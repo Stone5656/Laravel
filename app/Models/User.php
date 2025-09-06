@@ -12,48 +12,65 @@ use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * App\Models\User
+ * ユーザーモデル
  *
- * @property string $id
- * @property string $name
- * @property string $email
- * @property string $password
- * @property string|null $profile_image_path
- * @property string|null $cover_image_path
- * @property string|null $bio
- * @property string|null $channel_name
- * @property bool $is_stream
- * @property RoleEnum $roles
- * @property string|null $pending_email
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null $language
- * @property string|null $time_zone
- * @property string|null $phone_number
- * @property \Illuminate\Support\Carbon|null $birth_day
+ * @property string      $id                     ユーザーID(UUID)
+ * @property string      $name                   表示名
+ * @property string      $email                  ログイン用メール
+ * @property string|null $password               パスワード（ハッシュ済）
+ * @property string|null $bio                    自己紹介
+ * @property string|null $channel_name           配信用チャンネル名
+ * @property string|null $profile_image_path     プロフィール画像パス
+ * @property string|null $cover_image_path       カバー画像パス
+ * @property bool        $is_stream            配信者フラグ
+ * @property \RoleEnum::class      $roles                  ロール（例: user, moderator, admin）
+ * @property \DateTime|null $email_verified_at   メール確認日
+ * @property string|null $language               言語コード
+ * @property string|null $timezone               タイムゾーン
+ * @property string|null $phone_number           電話番号
+ * @property \DateTime|null $birthday            誕生日
+ * @property \DateTime|null $last_login_at       最終ログイン日時
+ * @property int         $login_failure_count    ログイン失敗回数
+ * @property string      $status                 ステータス (active/deleted/suspended)
+ * @property string|null $primary_email_id       メインメールのID (user_emails テーブル参照)
+ * @property \DateTime|null $created_at
+ * @property \DateTime|null $updated_at
+ * @property \DateTime|null $deleted_at
  */
 
 class User extends Authenticatable implements MustVerifyEmail, JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+    protected $table = 'users';
+
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id',
         'name',
         'email',
         'password',
-        'profile_image_path',
-        'cover_image_path',
         'bio',
         'channel_name',
+        'profile_image_path',
+        'cover_image_path',
         'is_stream',
+        'roles',
+        'email_verified_at',
         'language',
-        'time_zone',
+        'timezone',
         'phone_number',
-        'birth_day',
+        'birthday',
+        'last_login_at',
+        'login_failure_count',
+        'status',
+        'primary_email_id',
     ];
 
     protected $hidden = [
@@ -61,13 +78,15 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
     ];
 
     protected $casts = [
-        'roles' => RoleEnum::class,
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'birth_day' => 'date',
-        'password' => 'hashed',
-        'is_stream' => 'boolean',
+        'roles'                => RoleEnum::class,
+        'is_stream'            => 'boolean',
+        'email_verified_at'    => 'datetime',
+        'birthday'             => 'date',
+        'last_login_at'        => 'datetime',
+        'login_failure_count'  => 'integer',
+        'created_at'           => 'datetime',
+        'updated_at'           => 'datetime',
+        'deleted_at'           => 'datetime',
     ];
 
     protected static function boot()
@@ -109,5 +128,40 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
             'is_stream' => (bool) $this->is_stream,
             'email_verified' => (bool) $this->email_verified_at, // !is_null($this->email_verified_at)でも同じ意味だがbool値であることが分かりにくいためお勧めしない
         ];
+    }
+    /** メールアドレス(複数可) */
+    public function emails(): HasMany
+    {
+        return $this->hasMany(UserEmail::class);
+    }
+
+    /** このユーザーが所有する動画一覧 */
+    public function videos(): HasMany
+    {
+        return $this->hasMany(Video::class);
+    }
+
+    /** このユーザーが所有するライブ配信一覧 */
+    public function liveStreams(): HasMany
+    {
+        return $this->hasMany(LiveStream::class);
+    }
+
+    /** このユーザーが投稿したチャット一覧 */
+    public function chatMessage(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class);
+    }
+
+    /** このユーザーが購読しているユーザー一覧（followers） */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'subscriber_id');
+    }
+
+    /** このユーザーを購読しているユーザー一覧（followers） */
+    public function subscribers(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'subscribed_to_id');
     }
 }

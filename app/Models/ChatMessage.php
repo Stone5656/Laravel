@@ -6,21 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * ユーザーメールモデル
+ * チャットメッセージモデル
  *
- * @property string      $id              メールID(UUID)
- * @property string      $user_id         関連ユーザーID
- * @property string      $email           メールアドレス
- * @property bool        $is_primary      メインメールかどうか
- * @property \DateTime|null $verified_at  認証済み日時
+ * @property string      $id             メッセージID
+ * @property string      $user_id        投稿者ユーザーID
+ * @property string      $live_stream_id ライブ配信ID
+ * @property string      $message        メッセージ本文
  * @property \DateTime|null $created_at
  * @property \DateTime|null $updated_at
  */
-class UserEmail extends BaseModel
+class ChatMessage extends BaseModel
 {
     use HasFactory;
 
-    protected $table = 'user_emails';
+    protected $table = 'chat_messages';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -28,21 +27,24 @@ class UserEmail extends BaseModel
     protected $fillable = [
         'id',
         'user_id',
-        'email',
-        'is_primary',
-        'verified_at',
+        'live_stream_id',
+        'message',
     ];
 
     protected $casts = [
-        'is_primary' => 'boolean',
-        'verified_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
-    /** メールが紐づくユーザー */
+    /** 投稿者ユーザー */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** このメッセージが属するライブ配信 */
+    public function liveStream(): BelongsTo
+    {
+        return $this->belongsTo(LiveStream::class);
     }
 }
