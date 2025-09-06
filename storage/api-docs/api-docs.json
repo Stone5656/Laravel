@@ -665,7 +665,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "is_streamer": {
+                                    "is_stream": {
                                         "description": "配信者フラグ true/false",
                                         "type": "boolean"
                                     }

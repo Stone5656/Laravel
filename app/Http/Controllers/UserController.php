@@ -148,7 +148,7 @@ class UserController extends Controller
      *         description="新しい配信ステータス",
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="is_streamer", type="boolean", description="配信者フラグ true/false")
+     *             @OA\Property(property="is_stream", type="boolean", description="配信者フラグ true/false")
      *         )
      *     ),
      *     @OA\Response(response=200, description="配信ステータスの更新に成功しました")
@@ -158,7 +158,7 @@ class UserController extends Controller
     {
         $this->authorize('update', $user);
 
-        $user = $this->userService->setStreamingStatus($user, $request->validated('is_streamer'));
+        $user = $this->userService->setStreamingStatus($user, $request->validated('is_stream'));
 
         return response()->json($user);
     }

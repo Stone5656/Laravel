@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('language')->nullable()->after('is_streamer');
+            $table->string('language')->nullable()->after('is_stream');
             $table->string('time_zone')->nullable()->after('language');
             $table->string('phone_number')->nullable()->after('time_zone');
             $table->date('birth_day')->nullable()->after('phone_number');

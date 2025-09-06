@@ -10,7 +10,7 @@ class FilterUserRequest extends FormRequest
         return [
             'name' => ['nullable', 'string', 'max:50'],
             'roles' => ['nullable', 'string'],
-            'is_streamer' => ['nullable', 'boolean'],
+            'is_stream' => ['nullable', 'boolean'],
         ];
     }
 

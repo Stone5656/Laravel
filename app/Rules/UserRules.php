@@ -34,7 +34,7 @@ class UserRules
     public static function system(): array
     {
         return [
-            'is_streamer' => ['required', 'boolean'],
+            'is_stream' => ['required', 'boolean'],
             'roles' => ['required', new Enum(RoleEnum::class)],
         ];
     }

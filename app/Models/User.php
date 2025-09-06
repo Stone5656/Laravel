@@ -24,7 +24,7 @@ use Illuminate\Validation\ValidationException;
  * @property string|null $cover_image_path
  * @property string|null $bio
  * @property string|null $channel_name
- * @property bool $is_streamer
+ * @property bool $is_stream
  * @property RoleEnum $roles
  * @property string|null $pending_email
  * @property \Illuminate\Support\Carbon|null $email_verified_at
@@ -49,7 +49,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'cover_image_path',
         'bio',
         'channel_name',
-        'is_streamer',
+        'is_stream',
         'language',
         'time_zone',
         'phone_number',
@@ -67,7 +67,7 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         'updated_at' => 'datetime',
         'birth_day' => 'date',
         'password' => 'hashed',
-        'is_streamer' => 'boolean',
+        'is_stream' => 'boolean',
     ];
 
     protected static function boot()
@@ -89,5 +89,25 @@ class User extends Authenticatable implements MustVerifyEmail, JWTSubject
         });
     }
 
-    // JWT methods...
+    /**
+     * JWTの「主体（sub）」に入れる識別子を返す
+     * 通常はEloquentの主キー（UUIDやID）でOK
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey(); // $this->id
+    }
+
+    /**
+     * 追加のカスタムクレーム（任意）を返す
+     * 何も足さない場合は空配列
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'roles'       => $this->roles?->value, // Enumを使っているため ->value
+            'is_stream' => (bool) $this->is_stream,
+            'email_verified' => (bool) $this->email_verified_at, // !is_null($this->email_verified_at)でも同じ意味だがbool値であることが分かりにくいためお勧めしない
+        ];
+    }
 }

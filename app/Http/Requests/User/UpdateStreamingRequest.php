@@ -9,7 +9,7 @@ class UpdateStreamingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_streamer' => UserRules::system()['is_streamer']
+            'is_stream' => UserRules::system()['is_stream']
         ];
     }
 

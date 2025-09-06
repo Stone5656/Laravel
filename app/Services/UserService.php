@@ -13,7 +13,7 @@ class UserService
         return User::query()
             ->when($filters['name'] ?? null, fn($q, $name) => $q->where('name', 'like', "%$name%"))
             ->when($filters['roles'] ?? null, fn($q, $role) => $q->where('roles', $role))
-            ->when(isset($filters['is_streamer']), fn($q) => $q->where('is_streamer', $filters['is_streamer']))
+            ->when(isset($filters['is_stream']), fn($q) => $q->where('is_stream', $filters['is_stream']))
             ->paginate(20);
     }
 
@@ -38,7 +38,7 @@ class UserService
 
     public function setStreamingStatus(User $user, bool $streaming): User
     {
-        $user->is_streamer = $streaming;
+        $user->is_stream = $streaming;
         $user->save();
 
         return $user;

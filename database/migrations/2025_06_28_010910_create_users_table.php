@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('cover_image_path')->nullable(); // カバー画像
             $table->text('bio')->nullable(); // 自己紹介
             $table->string('channel_name')->nullable(); // チャンネル名（任意）
-            $table->boolean('is_streamer')->default(false); // 配信者フラグ
+            $table->boolean('is_stream')->default(false); // 配信中フラグ
             $table->string('roles')->default('user')->index(); // ロール（検索のためindex）
 
             $table->timestamp('email_verified_at')->nullable(); // メール認証日時
