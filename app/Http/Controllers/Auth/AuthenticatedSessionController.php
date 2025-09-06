@@ -30,6 +30,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): JsonResponse
     {
         $credentials = $request->only('email', 'password');
+        /** @var \Tymon\JWTAuth\JWTGuard $guard */
         $guard = auth('api');
 
         if (! $token = $guard->attempt($credentials)) {

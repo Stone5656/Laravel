@@ -56,11 +56,14 @@ class RegisteredUserController extends Controller
         // JWTトークン発行
         $token = auth('api')->attempt($credentials);
 
+        /** @var \Tymon\JWTAuth\JWTGuard $guard */
+        $guard = auth('api');
+
         return response()->json([
             'message' => 'ユーザー登録が完了しました。',
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'expires_in' => $guard->factory()->getTTL() * 60,
             'user' => $user,
         ], 201);
     }
