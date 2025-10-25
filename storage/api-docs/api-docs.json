@@ -475,6 +475,707 @@
                 }
             }
         },
+        "/api/live-streams/{id}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信詳細取得",
+                "description": "指定IDのライブ配信情報を取得（公開/非公開の可否はサービス層で判定）",
+                "operationId": "93813816251fd845805497401bda1adc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "見つかりません"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信情報更新（要ログイン）",
+                "operationId": "601aee7a43cd3d775c9466c636fd65b6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信削除（要ログイン）",
+                "operationId": "3ffe0c66fe6305411428a4a44ea32ec6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "削除成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/user/{userId}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ユーザー別ライブ一覧取得（公開のみ）",
+                "description": "指定ユーザーIDに紐づく公開ライブ配信一覧（ページング）を返します。",
+                "operationId": "e055acbf9d44a0a372af8cc590e2350c",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLiveStream"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/live-streams/user/{userId}/status": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ユーザー＆ステータス別ライブ一覧（公開のみ）",
+                "operationId": "5ca769b036322f05c1e4897cede29e33",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLiveStream"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/live-streams/status": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ステータス別ライブ一覧（公開のみ）",
+                "operationId": "c62235516024d595969151af82917ce8",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLiveStream"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/live-streams/statuses": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "複数ステータスのライブ一覧（公開のみ）",
+                "operationId": "ac401e73a8a3e7b1a34c805355f362cb",
+                "parameters": [
+                    {
+                        "name": "statuses[]",
+                        "in": "query",
+                        "description": "配信ステータスの配列（クエリは statuses[]=LIVE&statuses[]=SCHEDULED の形式）",
+                        "required": true,
+                        "explode": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "SCHEDULED",
+                                    "LIVE",
+                                    "ENDED",
+                                    "CANCELLED"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLiveStream"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/live-streams/search": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "タイトル検索＋ステータス指定（公開のみ）",
+                "operationId": "76623b2daa6a83760e008b0402117a2b",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "タイトル部分一致",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "配信ステータス",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "SCHEDULED",
+                                "LIVE",
+                                "ENDED",
+                                "CANCELLED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedLiveStream"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/live-streams/key/{streamKey}": {
+            "get": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "StreamKeyから配信取得（公開のみ）",
+                "operationId": "89e2ed53051e7be3e7cae18d358b3931",
+                "parameters": [
+                    {
+                        "name": "streamKey",
+                        "in": "path",
+                        "description": "ストリームキー",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "見つかりません"
+                    }
+                }
+            }
+        },
+        "/api/live-streams": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信作成（要ログイン）",
+                "description": "新規ライブ配信を作成。ストリームキーはサーバ側で自動生成。",
+                "operationId": "a3b7861e43e3af150bd1c23998bfce9f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "作成成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/reschedule": {
+            "put": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ配信スケジュール更新（要ログイン）",
+                "description": "予定日時やステータスを更新（延期/変更など）。",
+                "operationId": "47c2b51dc4b48e54102da7336988daaa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LiveStreamRescheduleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/open": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ開始（要ログイン）",
+                "operationId": "d3430e8138ab7f38b98a8a4821a2fdf7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "開始成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/close": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブ終了（要ログイン）",
+                "operationId": "319f5aca2280448563022560cc847705",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "終了成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/live-streams/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "LiveStreams"
+                ],
+                "summary": "ライブキャンセル（要ログイン）",
+                "operationId": "cb40b77251fb9889f1e3f4fa6c02bc6e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ライブ配信ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "キャンセル成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LiveStream"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -1857,6 +2558,223 @@
                     }
                 },
                 "type": "object"
+            },
+            "LiveStream": {
+                "required": [
+                    "id",
+                    "user_id",
+                    "title",
+                    "status",
+                    "is_public"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SCHEDULED",
+                            "LIVE",
+                            "ENDED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "is_public": {
+                        "type": "boolean"
+                    },
+                    "stream_key": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "scheduled_start_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "ended_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PaginatedLiveStream": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LiveStream"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "LiveStreamCreateRequest": {
+                "required": [
+                    "title"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 5000,
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "is_public": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "scheduled_start_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "LiveStreamUpdateRequest": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 5000,
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "is_public": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SCHEDULED",
+                            "LIVE",
+                            "ENDED",
+                            "CANCELLED"
+                        ]
+                    },
+                    "scheduled_start_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "LiveStreamRescheduleRequest": {
+                "required": [
+                    "scheduled_start_at"
+                ],
+                "properties": {
+                    "scheduled_start_at": {
+                        "description": "新しい予定開始時刻(ISO-8601)",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "SCHEDULED",
+                            "LIVE",
+                            "ENDED",
+                            "CANCELLED"
+                        ],
+                        "nullable": true
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -1875,6 +2793,10 @@
         {
             "name": "Users",
             "description": "カスタムしたユーザー関連操作"
+        },
+        {
+            "name": "LiveStreams",
+            "description": "LiveStreams"
         },
         {
             "name": "Videos",

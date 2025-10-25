@@ -184,6 +184,72 @@ use Illuminate\Routing\Controller as BaseController;
  *   type="object",
  *   @OA\Property(property="message", type="string", example="OK")
  * )
+ * @OA\Schema(
+ *   schema="LiveStream",
+ *   type="object",
+ *   required={"id","user_id","title","status","is_public"},
+ *   @OA\Property(property="id", type="string", format="uuid"),
+ *   @OA\Property(property="user_id", type="string", format="uuid"),
+ *   @OA\Property(property="title", type="string"),
+ *   @OA\Property(property="description", type="string", nullable=true),
+ *   @OA\Property(property="thumbnail_path", type="string", nullable=true),
+ *   @OA\Property(property="status", type="string", enum={"SCHEDULED","LIVE","ENDED","CANCELLED"}),
+ *   @OA\Property(property="is_public", type="boolean"),
+ *   @OA\Property(property="stream_key", type="string", nullable=true),
+ *   @OA\Property(property="scheduled_start_at", type="string", format="date-time", nullable=true),
+ *   @OA\Property(property="started_at", type="string", format="date-time", nullable=true),
+ *   @OA\Property(property="ended_at", type="string", format="date-time", nullable=true),
+ *   @OA\Property(property="created_at", type="string", format="date-time", nullable=true),
+ *   @OA\Property(property="updated_at", type="string", format="date-time", nullable=true)
+ * )
+ *
+ * @OA\Schema(
+ *   schema="PaginatedLiveStream",
+ *   type="object",
+ *   @OA\Property(property="current_page", type="integer", example=1),
+ *   @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/LiveStream")),
+ *   @OA\Property(property="first_page_url", type="string"),
+ *   @OA\Property(property="from", type="integer", nullable=true),
+ *   @OA\Property(property="last_page", type="integer"),
+ *   @OA\Property(property="last_page_url", type="string"),
+ *   @OA\Property(property="links", type="array", @OA\Items(type="object")),
+ *   @OA\Property(property="next_page_url", type="string", nullable=true),
+ *   @OA\Property(property="path", type="string"),
+ *   @OA\Property(property="per_page", type="integer"),
+ *   @OA\Property(property="prev_page_url", type="string", nullable=true),
+ *   @OA\Property(property="to", type="integer", nullable=true),
+ *   @OA\Property(property="total", type="integer")
+ * )
+ *
+ * @OA\Schema(
+ *   schema="LiveStreamCreateRequest",
+ *   type="object",
+ *   required={"title"},
+ *   @OA\Property(property="title", type="string", maxLength=255),
+ *   @OA\Property(property="description", type="string", nullable=true, maxLength=5000),
+ *   @OA\Property(property="thumbnail_path", type="string", nullable=true, maxLength=1024),
+ *   @OA\Property(property="is_public", type="boolean", nullable=true),
+ *   @OA\Property(property="scheduled_start_at", type="string", format="date-time", nullable=true)
+ * )
+ *
+ * @OA\Schema(
+ *   schema="LiveStreamUpdateRequest",
+ *   type="object",
+ *   @OA\Property(property="title", type="string", maxLength=255),
+ *   @OA\Property(property="description", type="string", nullable=true, maxLength=5000),
+ *   @OA\Property(property="thumbnail_path", type="string", nullable=true, maxLength=1024),
+ *   @OA\Property(property="is_public", type="boolean"),
+ *   @OA\Property(property="status", type="string", enum={"SCHEDULED","LIVE","ENDED","CANCELLED"}),
+ *   @OA\Property(property="scheduled_start_at", type="string", format="date-time", nullable=true)
+ * )
+ *
+ * @OA\Schema(
+ *   schema="LiveStreamRescheduleRequest",
+ *   type="object",
+ *   required={"scheduled_start_at"},
+ *   @OA\Property(property="scheduled_start_at", type="string", format="date-time", description="新しい予定開始時刻(ISO-8601)"),
+ *   @OA\Property(property="status", type="string", enum={"SCHEDULED","LIVE","ENDED","CANCELLED"}, nullable=true)
+ * )
  */
 
 class Controller extends BaseController
