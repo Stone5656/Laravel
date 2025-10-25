@@ -1,21 +1,23 @@
 <?php
+
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 class FilterUserRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user()?->can('user.list') ?? false;
+    }
+
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'max:50'],
-            'roles' => ['nullable', 'string'],
-            'is_stream' => ['nullable', 'boolean'],
+            'name' => ['nullable','string','max:255'],
+            'roles' => ['nullable','string','max:255'],
+            'is_stream' => ['nullable','boolean'],
+            'per_page' => ['nullable','integer','min:1','max:200'],
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true; // 管理者制限をかけたい場合は適宜変更
     }
 }

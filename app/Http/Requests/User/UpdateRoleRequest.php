@@ -1,20 +1,20 @@
 <?php
+
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Rules\UserRules;
 
 class UpdateRoleRequest extends FormRequest
 {
+    public function authorize(): bool
+    {
+        return $this->user()?->can('user.updateRole') ?? false;
+    }
+
     public function rules(): array
     {
         return [
-            'roles' => UserRules::system()['roles']
+            'role' => ['required','string','max:64'],
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true; // 必要に応じて認可チェック追加
     }
 }
