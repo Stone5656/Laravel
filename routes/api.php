@@ -51,3 +51,28 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('{user}', [UserController::class, 'destroy'])->name('destroy');
     });
 });
+
+use App\Http\Controllers\VideoController;
+
+Route::prefix('videos')->group(function () {
+    // 公開API
+    Route::get('{id}', [VideoController::class, 'show']);
+    Route::get('search', [VideoController::class, 'search']);
+    Route::get('user/{userId}', [VideoController::class, 'publicByUser']);
+    Route::get('popular', [VideoController::class, 'popular']);
+    Route::get('recent', [VideoController::class, 'recent']);
+    Route::patch('{id}/views', [VideoController::class, 'incrementViews']);
+
+    // 認証API（JWT + permission）
+    Route::middleware(['auth:api'])->group(function () {
+        Route::get('my', [VideoController::class, 'my'])->middleware('permission:video.my.list');
+        Route::post('upload', [VideoController::class, 'store'])->middleware('permission:video.create');
+        Route::put('{id}', [VideoController::class, 'update'])->middleware('permission:video.update');
+        Route::delete('{id}', [VideoController::class, 'destroy'])->middleware('permission:video.delete');
+        Route::patch('{id}/publish', [VideoController::class, 'publish'])->middleware('permission:video.publish');
+        Route::patch('{id}/unpublish', [VideoController::class, 'unpublish'])->middleware('permission:video.unpublish');
+
+        // 管理者専用
+        Route::post('{id}/restore', [VideoController::class, 'restore'])->middleware('permission:video.restore');
+    });
+});

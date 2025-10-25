@@ -821,6 +821,599 @@
                     }
                 ]
             }
+        },
+        "/api/videos/{id}": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "IDで動画を取得（公開/非公開はサービス層で可否判定）",
+                "description": "公開動画 or 所有者一致の場合のみ返却します。",
+                "operationId": "4f3140b090445a904b4598c1004542bb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Video"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "見つかりません"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を更新（要ログイン）",
+                "operationId": "9455586d7f731480a115f7d81a9cfcee",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VideoUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Video"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象動画なし"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を削除（要ログイン）",
+                "operationId": "ed3847155f59fa5133a57779d84b099a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "削除成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象動画なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/search": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "公開動画の検索",
+                "description": "タイトル部分一致、views_count/published_atでの降順ソート、ページングに対応します。",
+                "operationId": "4edbf54ee32a7e479d801f5c4d6b3318",
+                "parameters": [
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "タイトル部分一致",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "ソートキー（views_count|published_at、降順固定）",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "views_count",
+                                "published_at"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたり件数（1-100）",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPublicVideo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/videos/user/{userId}": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "特定ユーザーの公開動画一覧",
+                "description": "ユーザーIDに紐づく公開動画をページングで返します。",
+                "operationId": "9aef3d5967de85a6af0169300e7100e6",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ユーザーID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたり件数（1-100）",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPublicVideo"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "ユーザーが見つからない場合も空リストで返る想定"
+                    }
+                }
+            }
+        },
+        "/api/videos/popular": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "人気動画一覧（再生数降順）",
+                "operationId": "07e07a816753bf5c877e8750f294f40f",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたり件数（1-100）",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPublicVideo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/videos/recent": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "新着動画一覧（公開日時降順）",
+                "operationId": "29a46fb5fc388961ee05fcd66a51e446",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたり件数（1-100）",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedPublicVideo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/videos/{id}/views": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "再生数をインクリメント（公開エンドポイント想定）",
+                "operationId": "1f37b0c8087ad85dd7c73be774d40396",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "動画が見つからない場合は何もしない or 404（実装方針次第）"
+                    }
+                }
+            }
+        },
+        "/api/videos/my": {
+            "get": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "自分の動画一覧（要ログイン）",
+                "operationId": "768165ce4ac9a53ea391aeeb88818ef9",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "1ページあたり件数（1-100）",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PaginatedVideo"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/upload": {
+            "post": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画をアップロード（要ログイン）",
+                "operationId": "1259d05bdf33f77e574bd9ddd8580073",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VideoCreateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "作成成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Video"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/{id}/publish": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を公開（要ログイン）",
+                "description": "公開日時を指定し公開。未指定なら現在時刻。",
+                "operationId": "04e9a568ab55268c80754fef765014d0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/VideoPublishRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "公開成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象動画なし"
+                    },
+                    "422": {
+                        "description": "バリデーションエラー",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/{id}/unpublish": {
+            "patch": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "動画を非公開（要ログイン）",
+                "operationId": "b90a94c18679eec8cff275c7d8d291c8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "非公開成功"
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません（所有者でない等）"
+                    },
+                    "404": {
+                        "description": "対象動画なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/videos/{id}/restore": {
+            "post": {
+                "tags": [
+                    "Videos"
+                ],
+                "summary": "削除済み動画の復元（管理者）",
+                "operationId": "93621ca5a95f0df5dde16db7a669e342",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "動画ID(UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "復元成功",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Video"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "未認証"
+                    },
+                    "403": {
+                        "description": "権限がありません"
+                    },
+                    "404": {
+                        "description": "対象動画なし"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -927,6 +1520,343 @@
                     }
                 },
                 "type": "object"
+            },
+            "Video": {
+                "required": [
+                    "id",
+                    "user_id",
+                    "title",
+                    "is_public",
+                    "views_count"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "duration_sec": {
+                        "type": "integer",
+                        "example": 123,
+                        "nullable": true
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "is_public": {
+                        "type": "boolean"
+                    },
+                    "views_count": {
+                        "type": "integer",
+                        "example": 3456
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "PublicVideo": {
+                "required": [
+                    "id",
+                    "title",
+                    "thumbnail_path",
+                    "views_count",
+                    "published_at",
+                    "user_id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "views_count": {
+                        "type": "integer",
+                        "example": 3456
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "user_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    }
+                },
+                "type": "object"
+            },
+            "PaginatedVideo": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/Video"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "PaginatedPublicVideo": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PublicVideo"
+                        }
+                    },
+                    "first_page_url": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    },
+                    "last_page_url": {
+                        "type": "string"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "type": "object"
+                        }
+                    },
+                    "next_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "prev_page_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "to": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "VideoCreateRequest": {
+                "required": [
+                    "title"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 5000,
+                        "nullable": true
+                    },
+                    "duration_sec": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "nullable": true
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "is_public": {
+                        "type": "boolean",
+                        "nullable": true
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "VideoUpdateRequest": {
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "maxLength": 5000,
+                        "nullable": true
+                    },
+                    "duration_sec": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "nullable": true
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "thumbnail_path": {
+                        "type": "string",
+                        "maxLength": 1024,
+                        "nullable": true
+                    },
+                    "is_public": {
+                        "type": "boolean"
+                    },
+                    "published_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "VideoPublishRequest": {
+                "properties": {
+                    "published_at": {
+                        "description": "ISO-8601。未指定なら現在時刻",
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "The given data was invalid."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": {
+                            "title": [
+                                "The title field is required."
+                            ]
+                        },
+                        "additionalProperties": {
+                            "schema": "Controller",
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "Controller": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "MessageResponse": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "OK"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -945,6 +1875,10 @@
         {
             "name": "Users",
             "description": "カスタムしたユーザー関連操作"
+        },
+        {
+            "name": "Videos",
+            "description": "Videos"
         }
     ]
 }
