@@ -1,20 +1,21 @@
 <?php
 
 namespace App\Services;
-
+use App\Repositories\UserRepository;
 use App\Models\User;
 use App\Notifications\VerifyNewEmail;
 use App\Enums\RoleEnum;
 
 class UserService
-{
+{    
+    public function __construct(protected UserRepository $users) {}
     public function searchUsers(array $filters)
     {
-        return User::query()
+        return $this->users->search($filters) /* delegating to repository */
             ->when($filters['name'] ?? null, fn($q, $name) => $q->where('name', 'like', "%$name%"))
             ->when($filters['roles'] ?? null, fn($q, $role) => $q->where('roles', $role))
             ->when(isset($filters['is_stream']), fn($q) => $q->where('is_stream', $filters['is_stream']))
-            ->paginate(20);
+            /* pagination handled in repository */ ->paginate(20);
     }
 
     public function updateProfile(User $user, array $data): User
@@ -42,26 +43,6 @@ class UserService
         $user->save();
 
         return $user;
-    }
-
-    public function requestEmailChange(User $user, string $newEmail): void
-    {
-        $user->pending_email = $newEmail;
-        $user->save();
-
-        $user->notify(new VerifyNewEmail());
-    }
-
-    public function confirmEmailChange(User $user, string $email): void
-    {
-        if ($user->pending_email !== $email) {
-            abort(403, '不正なリクエストです。');
-        }
-
-        $user->email = $email;
-        $user->pending_email = null;
-        $user->email_verified_at = null;
-        $user->save();
     }
 
     public function deleteUser(User $user): void
