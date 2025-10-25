@@ -5,55 +5,47 @@ return [
     'documentations' => [
         'default' => [
             'api' => [
-                'title' => 'L5 Swagger UI',
+                // L5 Swagger UIページのメタタイトル
+                'title' => 'Streaming Site API Docs',
             ],
 
             'routes' => [
-                /*
-                 * Route for accessing api documentation interface
-                 */
+                // L5 Swagger UIページが公開されているパス
                 'api' => 'api/documentation',
             ],
             'paths' => [
                 /*
-                 * Edit to include full URL in ui for assets
+                 * ```
+                 * @foreach($urlsToDocs as $title => $url)
+                 *  urls.push({name: "{{ $title }}", url: "{{ $url }}"});
+                 * @endforeach
+                 * ```
+                 * など、index.blade.phpで指定しているapi-docs.json/api-docs.ymlの指定を
+                 * 内部的に相対パスで扱うか絶対パスで扱うかに寄与しています
                  */
                 'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
 
-                /*
-                * Edit to set path where swagger ui assets should be stored
-                */
+                // vendor内のswagger-ui配布物の相対パス
                 'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
 
-                /*
-                 * File name of the generated json documentation file
-                 */
+                // php artisan l5-swagger:generateで生成される仕様ファイル名
                 'docs_json' => 'api-docs.json',
-
-                /*
-                 * File name of the generated YAML documentation file
-                 */
                 'docs_yaml' => 'api-docs.yaml',
 
-                /*
-                 * Set this to `json` or `yaml` to determine which documentation file to use in UI
-                 */
+                // 生成された仕様ファイルのどちらを規定で読み込むか
                 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
 
-                /*
-                 * Absolute paths to directory containing the swagger annotations are stored.
-                 */
+
+                // @OA\をスキャンするディレクトリ
                 'annotations' => [
-                    base_path('app'),
+                    base_path('app/Http/Controllers'),
                 ],
             ],
         ],
     ],
     'defaults' => [
         'routes' => [
-            /*
-             * Route for accessing parsed swagger annotations.
-             */
+            // OpenAIのjson/ymlを提供するパス
             'docs' => 'docs',
 
             /*
